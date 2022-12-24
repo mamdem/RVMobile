@@ -1,0 +1,23 @@
+name: medicare
+description: Doctor Appointment App
+publish_to: "none"
+version: 1.0.0+1
+environment:
+  sdk: ">=2.15.1 <3.0.0"
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_map: ^0.14.0
+  http: ^0.13.3
+  flutter_svg: ^1.1.0
+  flutter_easyloading: ^3.0.3
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^1.0.0
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/
+    - assets/images/
+    - assets/icons/
