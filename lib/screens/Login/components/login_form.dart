@@ -17,6 +17,8 @@ class LoginForm extends StatelessWidget {
     var telController = TextEditingController();
     var mdpController = TextEditingController();
 
+    telController.text="777327178";
+    mdpController.text="houma";
     return Form(
       child: Column(
         children: [

@@ -143,6 +143,38 @@ class Networking{
     return response;
   }
 
+  static Future<List<dynamic>> getRVAvailableByMedecin(String idmedecin) async {
+    List response =  [] ;
+    EasyLoading.instance.backgroundColor = Colors.black;
+    EasyLoading.show(status:  'Chargement en cours...');
+    // User user;
+    await http
+        .get(
+      Uri.parse(baseUrl + rvBaseUrl+"all/patient/"+global.patient["idpatient"].toString()+"/"+idmedecin),
+      headers: {"Content-Type": "application/json"},
+
+    ).then((value) {
+      EasyLoading.dismiss();
+      if (value.statusCode == 200) {
+        //global.allRVAvailable = (jsonDecode(value.body));
+        response = (jsonDecode(value.body));
+      } else {
+        //LoginModel.user = null;
+        EasyLoading.instance.backgroundColor = Colors.red;
+        EasyLoading.showError(value.statusCode.toString());
+      }
+    }).onError((error, stackTrace) {
+      EasyLoading.dismiss();
+      EasyLoading.instance.backgroundColor = Colors.red;
+      EasyLoading.showError("Erreur de connection");
+    }).timeout(Duration(seconds: 15), onTimeout: () {
+      EasyLoading.dismiss();
+      EasyLoading.instance.backgroundColor = Colors.red;
+      EasyLoading.showError("Erreur de connection");
+    });
+    return response;
+  }
+
   static Future<List<dynamic>> getRVHistories() async {
     List response =  [] ;
 
@@ -202,11 +234,11 @@ class Networking{
     return response;
   }
 
-  static Future<int> getDoctors() async {
+  static Future<List<dynamic>> getDoctors() async {
     EasyLoading.instance.backgroundColor = Colors.black;
     EasyLoading.show(status:  'Chargement en cours...');
     // User user;
-    int response = -1;
+    List response = [];
     await http
         .get(
       Uri.parse(baseUrl+medecinDir+"all"),
@@ -215,25 +247,24 @@ class Networking{
       EasyLoading.dismiss();
       if (value.statusCode == 200) {
         global.allDoctors = (jsonDecode(value.body));
-        response=1;
+        response=jsonDecode(value.body);
       } else {
         EasyLoading.instance.backgroundColor = Colors.red;
         EasyLoading.showError(value.statusCode.toString());
-        response=-1;
       }
     }).onError((error, stackTrace) {
       EasyLoading.dismiss();
       EasyLoading.instance.backgroundColor = Colors.red;
       EasyLoading.showError("Erreur de connection");
-      response=-1;
     }).timeout(Duration(seconds: 3), onTimeout: () {
       EasyLoading.dismiss();
       EasyLoading.instance.backgroundColor = Colors.red;
       EasyLoading.showError("Erreur de connection");
-      response = -1;
     });
     return response;
   }
+
+
 
   static Future demander(String idRV) async{
     // User user;

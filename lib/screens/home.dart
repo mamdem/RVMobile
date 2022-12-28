@@ -23,7 +23,7 @@ class _HomeState extends State<Home> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    Networking.getDoctors() ;
+
     Networking.getRVAvailable();
     Networking.getReservations();
     Networking.getRVHistories();

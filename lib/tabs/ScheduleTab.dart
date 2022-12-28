@@ -24,37 +24,136 @@ class _ScheduleTabState extends State<ScheduleTab> {
 
   String currentStatus = "À venir";
   List<dynamic> currentSchedules = [];
+  List<dynamic> currentSchedulesSauve = [];
 
-  List<int> statusTab = [];
-  List<int> statusTab1 = [];
+  String val="";
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    for(int i=0; i<global.allRVAvailable.length;i++){
-      statusTab.add(-1);    //-1 = non demandé; 0 en cours de demande ou d'annulation; 1 demande
-      statusTab1.add(-1);
+    if(global.statusTab.isEmpty){
+      for(int i=0; i<global.allRVAvailable.length;i++){
+        global.statusTab.add(-1);    //-1 = non demandé; 0 en cours de demande ou d'annulation; 1 demande
+        global.statusTab1.add(-1);
+      }
     }
     currentSchedules = global.allRVAvailable;
+    currentSchedulesSauve = global.allRVAvailable;
   }
 
-  initializeStatusTab(List<dynamic> list){
-    statusTab = [];
+  initializestatusTab(List<dynamic> list){
+    global.statusTab = [];
     for(int i=0; i<list.length;i++){
-      statusTab.add(-1);    //-1 = non demandé; 0 en cours de demande ou d'annulation; 1 demande
+      global.statusTab.add(-1);    //-1 = non demandé; 0 en cours de demande ou d'annulation; 1 demande
     }
   }
 
+  _search(String _value){
+    String value = _value.toLowerCase();
+    setState(() {
+      currentSchedules = [];
+      dynamic schedule;
+      if(value.trim().isEmpty){
+        currentSchedules=currentSchedulesSauve;
+        return;
+      }
+      for(dynamic sched in currentSchedulesSauve){
+        schedule = sched;
+        if(status==FilterStatus.Complete){
+          schedule=sched["rendezvous"];
+        }
+        if(schedule["medecin"]["prenom"].toString().toLowerCase().contains(value)
+            || schedule["medecin"]["nom"].toString().toLowerCase().contains(value)
+        || schedule["medecin"]["structure"]["nom"].toString().toLowerCase().contains(value)
+        || schedule["medecin"]["structure"]["adresse"].toString().toLowerCase().contains(value)){
+          currentSchedules.add(sched);
+        }
+      }
+    });
+  }
+
+  bool isSearch=false;
   @override
   Widget build(BuildContext context) {
     final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
     return Scaffold(
+      appBar: AppBar(
+        // Update the `leading` to have a better design
+        backgroundColor: Color(MyColors.primary),
+        leading: IconButton(
+            icon: CircleAvatar(
+              backgroundImage: AssetImage("assets/person.jpeg"),
+            ),
+            onPressed: () {
+
+            }
+        ),
+        // Change the app name
+        title: Text(global.patient["prenom"].toString()+' '+global.patient["nom"].toString()+' 👋',),
+        actions: <Widget>[
+          // Second button - increment
+          IconButton(
+            icon: isSearch? Icon(Icons.search_off):Icon(Icons.search), // The "+" icon
+            onPressed: (){
+              setState(() {
+                isSearch = !isSearch;
+              });
+            }, // The `_incrementCounter` function
+          ), //IconButton
+        ],
+      ),
       body: Padding(
-        padding: const EdgeInsets.only(left: 30, top: 30, right: 30),
+        padding: const EdgeInsets.only(left: 30, top: 20, right: 30),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
+            /*Text(
+              'Rendez-vous',
+              textAlign: TextAlign.center,
+              style: kTitleStyle,
+            ),*/
+            isSearch ? Container(  //Recherche
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Color(MyColors.bg),
+                borderRadius: BorderRadius.circular(5),
+              ),
+              padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 3),
+                    child: Icon(
+                      Icons.search,
+                      color: Color(MyColors.purple02),
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 15,
+                  ),
+                  Expanded(
+                    child: TextField(
+                      onChanged: (value){
+                        setState(() {
+                          val=value;
+                        });
+                        _search(value);
+                      },
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: 'Rechercher un rendez-vous...',
+                        hintStyle: TextStyle(
+                            fontSize: 13,
+                            color: Color(MyColors.purple01),
+                            fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ):Text(
               'Rendez-vous',
               textAlign: TextAlign.center,
               style: kTitleStyle,
@@ -82,7 +181,9 @@ class _ScheduleTabState extends State<ScheduleTab> {
                                   _alignment = Alignment.centerLeft;
                                   currentStatus = "À venir";
                                   currentSchedules = global.allRVAvailable;
-                                  statusTab = statusTab1;
+                                  currentSchedulesSauve = global.allRVAvailable;
+                                  global.statusTab = global.statusTab1;
+                                  _search(val);
                               });
                             },
                             child: Center(
@@ -101,7 +202,9 @@ class _ScheduleTabState extends State<ScheduleTab> {
                               _alignment = Alignment.center;
                               currentStatus = "Mes RV";
                               currentSchedules = global.allReservation;
-                              initializeStatusTab(currentSchedules);
+                              currentSchedulesSauve = global.allReservation;
+                              initializestatusTab(currentSchedules);
+                              _search(val);
                             });
                           },
                           child: Center(
@@ -120,7 +223,9 @@ class _ScheduleTabState extends State<ScheduleTab> {
                               _alignment = Alignment.centerRight;
                               currentStatus = "Historiques";
                               currentSchedules = global.allRVHistories;
-                              initializeStatusTab(currentSchedules);
+                              currentSchedulesSauve = global.allRVHistories;
+                              initializestatusTab(currentSchedules);
+                              _search(val);
                             });
                           },
                           child: Center(
@@ -169,8 +274,10 @@ class _ScheduleTabState extends State<ScheduleTab> {
                         global.allRVAvailable = resp;
                         if(status==FilterStatus.Upcoming){
                           currentSchedules = resp;
-                          initializeStatusTab(resp);
-                          statusTab1 = statusTab;
+                          currentSchedulesSauve = resp;
+                          initializestatusTab(resp);
+                          global.statusTab1 = global.statusTab;
+                          _search(val);
                         }
                       });
                     }
@@ -181,7 +288,9 @@ class _ScheduleTabState extends State<ScheduleTab> {
                         global.allReservation = resp;
                         if(status==FilterStatus.Complete){
                           currentSchedules = resp;
-                          initializeStatusTab(resp);
+                          currentSchedulesSauve = resp;
+                          initializestatusTab(resp);
+                          _search(val);
                         }
                       });
                     }
@@ -192,11 +301,14 @@ class _ScheduleTabState extends State<ScheduleTab> {
                         global.allRVHistories = resp;
                         if(status==FilterStatus.Cancel){
                           currentSchedules=resp;
-                          initializeStatusTab(resp);
+                          currentSchedulesSauve=resp;
+                          initializestatusTab(resp);
+                          _search(val);
                         }
                       });
                     }
                   });
+
                 },
                 child: currentSchedules.isEmpty ?
                 ListView(
@@ -212,11 +324,11 @@ class _ScheduleTabState extends State<ScheduleTab> {
                                 Image.asset("assets/images/cons.png"),
                                 SizedBox(height: 20.0,),
                                 Text(
-                                  'Aucun rendez-vous pour le moment',
+                                  status==FilterStatus.Cancel? 'Aucune historique'
+                                  : 'Aucun rendez-vous',
                                   textAlign: TextAlign.center,
                                 ),
                                 SizedBox(height: 10.0,),
-
                               ],
                             )
                         ),
@@ -350,27 +462,27 @@ class _ScheduleTabState extends State<ScheduleTab> {
                                   width: 20,
                                 ),
                                 if(status==FilterStatus.Upcoming)
-                                  if(statusTab[index]==0)
+                                  if(global.statusTab[index]==0)
                                     Expanded(child: LinearProgressIndicator())
-                                  else if(statusTab[index]==-1)
+                                  else if(global.statusTab[index]==-1)
                                     Expanded(
                                       child: ElevatedButton(
                                         child: Text('Demander'),
                                         onPressed: () async{
                                           setState(() {
-                                            statusTab[index]=0;
+                                            global.statusTab[index]=0;
                                           });
                                           Networking.demander(_schedule["idrdv"].toString()).then((resp){
                                             if(resp!=-1){ //That's OK
                                               //global.allRVAvailable
                                               setState(() {
-                                                statusTab[index]=1;   //Possibilité d'annuler la demande
-                                                statusTab1[index]=1;
+                                                global.statusTab[index]=1;   //Possibilité d'annuler la demande
+                                                global.statusTab1[index]=1;
                                               });
                                             }else{
                                               setState(() {
-                                                statusTab[index]=-1;   //Possibilité d'annuler la demande
-                                                statusTab1[index]=-1;
+                                                global.statusTab[index]=-1;   //Possibilité d'annuler la demande
+                                                global.statusTab1[index]=-1;
                                               });
                                             }
                                           }) ;
@@ -385,13 +497,13 @@ class _ScheduleTabState extends State<ScheduleTab> {
                                           Networking.annuler(_schedule['idrdv'].toString()).then((resp){
                                             if(resp!=-1){   //That's OK
                                               setState(() {
-                                                statusTab[index]=-1;
-                                                statusTab1[index]=-1;
+                                                global.statusTab[index]=-1;
+                                                global.statusTab1[index]=-1;
                                               });
                                             }else{
                                               setState(() {
-                                                statusTab[index]=1;
-                                                statusTab1[index]=1;
+                                                global.statusTab[index]=1;
+                                                global.statusTab1[index]=1;
                                               });
                                             }
                                           });

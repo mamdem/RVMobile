@@ -1,31 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:medicare/models/utils/networking.dart';
 import 'package:medicare/styles/colors.dart';
 import 'package:medicare/styles/styles.dart';
 import "package:latlong2/latlong.dart" as latLng;
+import 'package:medicare/models/utils/global.dart' as global;
 
-class SliverDoctorDetail extends StatelessWidget {
-  const SliverDoctorDetail({Key? key}) : super(key: key);
+class SliverDoctorDetail extends StatefulWidget {
+
+  SliverDoctorDetail({Key? key}) : super(key: key);
 
   @override
+  _SliverDoctorDetailState createState() => _SliverDoctorDetailState();
+}
+
+class _SliverDoctorDetailState extends State<SliverDoctorDetail> {
+
+  int index=0;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+  @override
   Widget build(BuildContext context) {
+    final json = (ModalRoute.of(context)?.settings.arguments ?? <String, dynamic>{}) as Map;
+    setState(() {
+      index = json['index'];
+    });
+    print(index);
     return Scaffold(
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
             pinned: true,
-            title: Text('Detail Doctor'),
+            title: Text(global.allDoctors[index]['structure']['nom']),
             backgroundColor: Color(MyColors.primary),
             expandedHeight: 200,
             flexibleSpace: FlexibleSpaceBar(
-              background: Image(
-                image: AssetImage('assets/hospital.jpeg'),
+              background: global.allDoctors[index]['structure']['imageStructures'].length==0?Image(
+                image: AssetImage('assets/default-hospital-profile.jpg'),
+                fit: BoxFit.cover,
+              ):Image(
+                image: (NetworkImage(Networking.baseUrlImg+Networking.cliniqueDir+global.allDoctors[index]['structure']['imageStructures'][0]['nom'])),
                 fit: BoxFit.cover,
               ),
             ),
           ),
           SliverToBoxAdapter(
-            child: DetailBody(),
+            child: DetailBody(json: global.allDoctors[index], index: index,),
           )
         ],
       ),
@@ -34,8 +57,10 @@ class SliverDoctorDetail extends StatelessWidget {
 }
 
 class DetailBody extends StatelessWidget {
-  const DetailBody({
-    Key? key,
+  dynamic json;
+  int index;
+  DetailBody({Key? key,
+    required this.json, required this.index
   }) : super(key: key);
 
   @override
@@ -46,7 +71,7 @@ class DetailBody extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          DetailDoctorCard(),
+          DetailDoctorCard(json: json,),
           SizedBox(
             height: 15,
           ),
@@ -55,14 +80,14 @@ class DetailBody extends StatelessWidget {
             height: 30,
           ),
           Text(
-            'About Doctor',
+            'À propos de '+json['prenom'],
             style: kTitleStyle,
           ),
           SizedBox(
             height: 15,
           ),
           Text(
-            'Dr. Joshua Simorangkir is a specialist in internal medicine who specialzed blah blah.',
+            json['biographie'],
             style: TextStyle(
               color: Color(MyColors.purple01),
               fontWeight: FontWeight.w500,
@@ -89,8 +114,14 @@ class DetailBody extends StatelessWidget {
                 Color(MyColors.primary),
               ),
             ),
-            child: Text('Book Appointment'),
-            onPressed: () => {},
+            child: Text('Prendre un rendez-vous'),
+            onPressed: () => {
+              Networking.getRVAvailableByMedecin(global.allDoctors[index]['idmedecin'].toString()).then((resp){
+                global.rvByMedecin=resp;
+                Navigator.pushNamed(context, '/appointment', arguments: {"index": index});
+              }),
+
+            },
           )
         ],
       ),
@@ -221,8 +252,9 @@ class NumberCard extends StatelessWidget {
 }
 
 class DetailDoctorCard extends StatelessWidget {
-  const DetailDoctorCard({
-    Key? key,
+  dynamic json;
+  DetailDoctorCard({Key? key,
+    required this.json
   }) : super(key: key);
 
   @override
@@ -241,7 +273,7 @@ class DetailDoctorCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Dr. Josua Simorangkir',
+                      'Dr. '+json['prenom']+' '+json['nom'],
                       style: TextStyle(
                           color: Color(MyColors.header01),
                           fontWeight: FontWeight.w700),
@@ -250,7 +282,7 @@ class DetailDoctorCard extends StatelessWidget {
                       height: 10,
                     ),
                     Text(
-                      'Heart Specialist',
+                      json['service']['nomservice'],
                       style: TextStyle(
                         color: Color(MyColors.grey02),
                         fontWeight: FontWeight.w500,
@@ -260,8 +292,8 @@ class DetailDoctorCard extends StatelessWidget {
                 ),
               ),
               Image(
-                image: AssetImage('assets/doctor01.jpeg'),
-                width: 100,
+                image: NetworkImage(Networking.baseUrlImg+Networking.medecinDir+json['profil']),
+                width: 50,
               )
             ],
           ),

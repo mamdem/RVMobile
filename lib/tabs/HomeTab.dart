@@ -4,28 +4,6 @@ import 'package:medicare/styles/colors.dart';
 import 'package:medicare/styles/styles.dart';
 import 'package:medicare/models/utils/global.dart' as global;
 
-List<Map> doctorsf = [
-  {
-    'img': 'assets/doctor02.png',
-    'doctorName': 'Dr. Gardner Pearson',
-    'doctorTitle': 'Heart Specialist'
-  },
-  {
-    'img': 'assets/doctor03.jpeg',
-    'doctorName': 'Dr. Rosa Williamson',
-    'doctorTitle': 'Skin Specialist'
-  },
-  {
-    'img': 'assets/doctor02.png',
-    'doctorName': 'Dr. Gardner Pearson',
-    'doctorTitle': 'Heart Specialist'
-  },
-  {
-    'img': 'assets/doctor03.jpeg',
-    'doctorName': 'Dr. Rosa Williamson',
-    'doctorTitle': 'Skin Specialist'
-  }
-];
 
 class HomeTab extends StatefulWidget {
   const HomeTab({Key? key, required this.onPressedScheduleCard}) : super(key: key);
@@ -38,34 +16,141 @@ class HomeTab extends StatefulWidget {
 
 class _HomeTabState extends State<HomeTab>{
 
+  List<dynamic> doctorsList = [];
+
+  bool isSearch = false;
+
+  String val="";
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    if(!global.first) {
+      global.first=true;
+      Networking.getDoctors().then((value) {
+        setState(() {
+          doctorsList = global.allDoctors;
+        });
+      });
+    }else{
+      doctorsList=global.allDoctors;
+    }
+  }
+
+  _search(String val){
+    setState(() {
+      doctorsList=[];
+      String value = val.trim().toLowerCase();
+      if(value.isEmpty){
+        doctorsList = global.allDoctors;
+      }else{
+        for(dynamic doctor in global.allDoctors){
+          if(doctor['nom'].toString().toLowerCase().contains(value)
+              || doctor['prenom'].toString().toLowerCase().contains(value)
+              || doctor['service']['nomservice'].toString().toLowerCase().contains(value)
+              || doctor['structure']['nom'].toString().toLowerCase().contains(value)
+              || doctor['structure']['adresse'].toString().toString().contains(value)){
+            doctorsList.add(doctor);
+          }
+        }
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
 
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 30),
-        child: ListView(
-          children: [
-            SizedBox(
-              height: 20,
-            ),
-            UserIntro(),
-            SizedBox(
-              height: 10,
-            ),
-            SearchInput(),
-            SizedBox(
-              height: 20,
-            ),
-            CategoryIcons(),
-            SizedBox(
-              height: 20,
-            ),
-            Row(
+    return Scaffold(
+        appBar: AppBar(
+          // Update the `leading` to have a better design
+          backgroundColor: Color(MyColors.primary),
+          leading: IconButton(
+              icon: CircleAvatar(
+                  backgroundImage: AssetImage("assets/person.jpeg"),
+              ),
+              onPressed: () {
+
+              }
+          ),
+          // Change the app name
+          title: Text(global.patient["prenom"].toString()+' '+global.patient["nom"].toString()+' 👋',),
+          actions: <Widget>[
+            // Second button - increment
+            IconButton(
+              icon: isSearch? Icon(Icons.search_off):Icon(Icons.search), // The "+" icon
+              onPressed: (){
+                setState(() {
+                  isSearch = !isSearch;
+                });
+              }, // The `_incrementCounter` function
+            ), //IconButton
+          ],
+        ),
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Container(
+            //padding: EdgeInsets.symmetric(horizontal: 30),
+            child:Padding(
+              padding: const EdgeInsets.only(left: 30, top: 20, right: 30),
+              child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+
+                isSearch? Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Color(MyColors.bg),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 3),
+                        child: Icon(
+                          Icons.search,
+                          color: Color(MyColors.purple02),
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 15,
+                      ),
+                      Expanded(
+                        child: TextField(
+                          onChanged: (value){
+                            val=value;
+                            _search(value);
+                          },
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            hintText: 'Rechercher un docteur...',
+                            hintStyle: TextStyle(
+                                fontSize: 13,
+                                color: Color(MyColors.purple01),
+                                fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ):Text(
+                  'Accueil',
+                  textAlign: TextAlign.center,
+                  style: kTitleStyle,
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                CategoryIcons(),
+                SizedBox(
+                  height: 20,
+                ),
+                /*Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+               Text(
                   'Les rendez-vous d\'aujourd\'hui',
                   style: kTitleStyle,
                 ),
@@ -89,36 +174,58 @@ class _HomeTabState extends State<HomeTab>{
             ),
             SizedBox(
               height: 20,
-            ),
-            Text(
-              'Top Doctor',
-              style: TextStyle(
-                color: Color(MyColors.header01),
-                fontWeight: FontWeight.bold,
+            ),*/
+              Expanded(
+                  child:RefreshIndicator(
+                    onRefresh:() async{
+                      Networking.getDoctors().then((rep){
+                        if(rep.isNotEmpty){
+                          setState(() {
+                            global.allDoctors=rep;
+                            doctorsList=rep;
+                          });
+                        }
+                      });
+                    },
+                    child: ListView(
+                      children: [
+                        Text(
+                          'Top Docteur',
+                          style: TextStyle(
+                            color: Color(MyColors.header01),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        for (int i=0; i<doctorsList.length;i++)
+                          TopDoctorCard(
+                            index: i,
+                            img: doctorsList[i]['profil'],
+                            doctorName: doctorsList[i]['prenom']+' '+doctorsList[i]['nom'],
+                            doctorTitle: doctorsList[i]['service']['nomservice'],
+                          )
+                      ],
+                    )
+                  )
               ),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            for (var doctor in global.allDoctors)
-              TopDoctorCard(
-                img: doctor['profil'],
-                doctorName: doctor['prenom']+' '+doctor['nom'],
-                doctorTitle: doctor['service']['nomservice'],
-              )
-          ],
+            ]
+          ))
         ),
-      ),
+      )
     );
   }
 }
 
 class TopDoctorCard extends StatelessWidget {
+  int index;
   String img;
   String doctorName;
   String doctorTitle;
 
   TopDoctorCard({
+    required this.index,
     required this.img,
     required this.doctorName,
     required this.doctorTitle,
@@ -130,7 +237,7 @@ class TopDoctorCard extends StatelessWidget {
       margin: EdgeInsets.only(bottom: 20),
       child: InkWell(
         onTap: () {
-          Navigator.pushNamed(context, '/detail');
+          Navigator.pushNamed(context, '/detail', arguments: {"index": index});
         },
         child: Row(
           children: [
