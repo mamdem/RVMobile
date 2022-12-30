@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:medicare/models/utils/networking.dart';
 import 'package:medicare/styles/colors.dart';
@@ -65,16 +68,31 @@ class _HomeTabState extends State<HomeTab>{
         appBar: AppBar(
           // Update the `leading` to have a better design
           backgroundColor: Color(MyColors.primary),
+          centerTitle: true,
+          elevation: 2,
           leading: IconButton(
-              icon: CircleAvatar(
-                  backgroundImage: AssetImage("assets/person.jpeg"),
+              icon: global. b64!=""?  CircleAvatar(
+                backgroundImage: MemoryImage(base64Decode(global.b64)),
+                radius: 50,
+              ):global.patient['profil']!=null?CircleAvatar(
+                backgroundImage: NetworkImage(Networking.baseUrlImg+"patient/"+global.patient['profil']),
+                radius: 50,
+              ):CircleAvatar(
+                backgroundImage: AssetImage("assets/icons/default.png"),
+                radius: 50,
               ),
               onPressed: () {
-
+                Navigator.pushNamed(context, '/profil');
               }
           ),
           // Change the app name
-          title: Text(global.patient["prenom"].toString()+' '+global.patient["nom"].toString()+' 👋',),
+          title: Text(
+            global.patient["prenom"].toString()+' '+global.patient["nom"].toString()+' 👋',
+            style: TextStyle(
+              fontStyle: FontStyle.italic,
+              fontSize: 18
+            ),
+          ),
           actions: <Widget>[
             // Second button - increment
             IconButton(

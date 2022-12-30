@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:ffi';
 
 import 'package:flutter/material.dart';
@@ -81,16 +82,30 @@ class _ScheduleTabState extends State<ScheduleTab> {
       appBar: AppBar(
         // Update the `leading` to have a better design
         backgroundColor: Color(MyColors.primary),
+        centerTitle: true,
         leading: IconButton(
-            icon: CircleAvatar(
-              backgroundImage: AssetImage("assets/person.jpeg"),
+            icon:global. b64!=""?  CircleAvatar(
+              backgroundImage: MemoryImage(base64Decode(global.b64)),
+              radius: 50,
+            ):global.patient['profil']!=null?CircleAvatar(
+              backgroundImage: NetworkImage(Networking.baseUrlImg+"patient/"+global.patient['profil']),
+              radius: 50,
+            ):CircleAvatar(
+              backgroundImage: AssetImage("assets/icons/default.png"),
+              radius: 50,
             ),
             onPressed: () {
 
             }
         ),
         // Change the app name
-        title: Text(global.patient["prenom"].toString()+' '+global.patient["nom"].toString()+' 👋',),
+        title: Text(
+          global.patient["prenom"].toString()+' '+global.patient["nom"].toString()+' 👋',
+          style: TextStyle(
+              fontStyle: FontStyle.italic,
+              fontSize: 18
+          ),
+        ),
         actions: <Widget>[
           // Second button - increment
           IconButton(

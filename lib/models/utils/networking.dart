@@ -265,7 +265,6 @@ class Networking{
   }
 
 
-
   static Future demander(String idRV) async{
     // User user;
     int response = -1;
@@ -284,6 +283,40 @@ class Networking{
         //LoginModel.user = null;
         EasyLoading.instance.backgroundColor = Colors.red;
         EasyLoading.showToast("Erreur d'envoie de la demande", toastPosition: EasyLoadingToastPosition.bottom);
+        response=-1;
+      }
+      response = value.statusCode;
+    }).onError((error, stackTrace) {
+      print(stackTrace);
+      //LoginModel.user = null;
+      EasyLoading.instance.backgroundColor = Colors.red;
+      EasyLoading.showToast("Erreur d'envoie de la demande", toastPosition: EasyLoadingToastPosition.bottom);
+      response=-1;
+    }).timeout(Duration(seconds: 3), onTimeout: () {
+      print("TIME OUT !!!!");
+      EasyLoading.instance.backgroundColor = Colors.red;
+      EasyLoading.showToast("Erreur d'envoie de la demande", toastPosition: EasyLoadingToastPosition.bottom);
+      response = -1;
+    });
+    return response;
+  }
+
+  static Future updateProfil(String b64, String idpatient) async{
+    // User user;
+    int response = -1;
+    await http
+        .post(
+        Uri.parse(baseUrl +patientBaseUrl+ "editurlimage/"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "idpatient": idpatient,
+          "profil": b64
+        }),
+    )
+        .then((value) {
+      if (value.statusCode == 200) {
+        response=1;
+      } else {
         response=-1;
       }
       response = value.statusCode;

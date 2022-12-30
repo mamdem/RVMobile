@@ -31,11 +31,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        fontFamily: "RobotoMono",
+      ),
       builder: EasyLoading.init(),
       debugShowCheckedModeBanner: false,
       initialRoute: '/welcome',
       routes: routes,
-
     );
   }
 }

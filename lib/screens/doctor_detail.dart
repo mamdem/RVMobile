@@ -8,7 +8,7 @@ import 'package:medicare/models/utils/global.dart' as global;
 
 class SliverDoctorDetail extends StatefulWidget {
 
-  SliverDoctorDetail({Key? key}) : super(key: key);
+  const SliverDoctorDetail({Key? key}) : super(key: key);
 
   @override
   _SliverDoctorDetailState createState() => _SliverDoctorDetailState();

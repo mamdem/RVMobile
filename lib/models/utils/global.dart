@@ -11,3 +11,5 @@ List<dynamic> rvByMedecin=[];
 List<int> statusTab = [];
 List<int> statusTab1 = [];
 bool first=false;
+String prefixImg = "profil_patient_";
+String b64="";
