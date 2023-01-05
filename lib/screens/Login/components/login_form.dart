@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:medicare/models/utils/networking.dart';
 import 'package:medicare/screens/home.dart';
+import 'package:medicare/styles/colors.dart';
 
 import '../../../components/already_have_an_account_acheck.dart';
 import '../../../constants.dart';
@@ -68,6 +69,8 @@ class LoginForm extends StatelessWidget {
               child: Text(
                 "Connexion".toUpperCase(),
               ),
+              style: ElevatedButton.styleFrom(
+                  primary: Color(MyColors.primary), elevation: 0),
             ),
           ),
           const SizedBox(height: defaultPadding),

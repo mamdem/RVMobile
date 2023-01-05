@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:medicare/models/utils/networking.dart';
 import 'package:medicare/styles/colors.dart';
 import 'package:medicare/styles/styles.dart';
-import "package:latlong2/latlong.dart" as latLng;
 import 'package:medicare/models/utils/global.dart' as global;
 
 class SliverDoctorDetail extends StatefulWidget {
@@ -28,7 +27,6 @@ class _SliverDoctorDetailState extends State<SliverDoctorDetail> {
     setState(() {
       index = json['index'];
     });
-    print(index);
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -65,6 +63,25 @@ class DetailBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    late GoogleMapController mapController; //contrller for Google map
+    final Set<Marker> markers = new Set(); //markers for google map
+    LatLng showLocation = LatLng(global.allDoctors[index]['structure']['latitude'], global.allDoctors[index]['structure']['longitude']); //location to show in map
+
+    Set<Marker> getmarkers() { //markers to place on map
+      markers.add(Marker( //add third marker
+        markerId: MarkerId(showLocation.toString()),
+        position: showLocation, //position of marker
+        infoWindow: InfoWindow( //popup info
+          title: 'Marker Title Third ',
+          snippet: 'My Custom Subtitle',
+        ),
+        icon: BitmapDescriptor.defaultMarker, //Icon for Marker
+      ));
+        //add more markers here
+      return markers;
+    }
+
     return Container(
       padding: EdgeInsets.all(20),
       margin: EdgeInsets.only(bottom: 30),
@@ -95,16 +112,54 @@ class DetailBody extends StatelessWidget {
             ),
           ),
           SizedBox(
-            height: 25,
+            height: 15,
           ),
-          Text(
-            'Location',
-            style: kTitleStyle,
+          Divider(),
+          Row(
+            //mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Text(
+                'Location',
+                style: kTitleStyle,
+              ),
+              Expanded(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/map', arguments: {"index":index});
+                      },
+                      child: Icon(Icons.fullscreen, color: Colors.white),
+                      style: ElevatedButton.styleFrom(
+                        shape: CircleBorder(),
+                        padding: EdgeInsets.all(5),
+                        backgroundColor: Color(MyColors.primary), // <-- Button color
+                        foregroundColor: Colors.red, // <-- Splash color
+                      ),
+                    ),
+                  )
+              )
+            ],
           ),
           SizedBox(
             height: 25,
           ),
-          DoctorLocation(),
+          SizedBox(
+            width: double.infinity,
+            height: 200,
+            child: GoogleMap( //Map widget from google_maps_flutter package
+              zoomGesturesEnabled: true, //enable Zoom in, out on map
+              initialCameraPosition: CameraPosition( //innital position in map
+                target: showLocation, //initial position
+                zoom: 15.0, //initial zoom level
+              ),
+              markers: getmarkers(), //markers to show on map
+              mapType: MapType.normal, //map type
+              onMapCreated: (controller) { //method called when map is created
+                  mapController = controller;
+              },
+            ),
+          ),
           SizedBox(
             height: 25,
           ),
@@ -127,6 +182,7 @@ class DetailBody extends StatelessWidget {
       ),
     );
   }
+
 }
 
 class DoctorLocation extends StatelessWidget {
@@ -139,21 +195,7 @@ class DoctorLocation extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       height: 200,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: FlutterMap(
-          options: MapOptions(
-            center: latLng.LatLng(51.5, -0.09),
-            zoom: 13.0,
-          ),
-          layers: [
-            TileLayerOptions(
-              urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-              subdomains: ['a', 'b', 'c'],
-            ),
-          ],
-        ),
-      ),
+      child:Text('')
     );
   }
 }

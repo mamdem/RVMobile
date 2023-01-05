@@ -8,10 +8,11 @@ import 'package:medicare/models/utils/global.dart' as global;
 
 class Networking{
 
-  static const String baseUrl = 'http://192.168.1.126:8080/';
+  static const String ipAdress="http://192.168.185.132";
+  static const String baseUrl = ipAdress+':8080/';
   static const String patientBaseUrl = 'patient/';
   static const String rvBaseUrl = 'rendezvous/';
-  static const String baseUrlImg = 'http://192.168.1.126/imguploaded/';
+  static const String baseUrlImg = ipAdress+'/imguploaded/';
   static const String medecinDir = 'medecin/';
   static const String cliniqueDir = 'clinique/';
 

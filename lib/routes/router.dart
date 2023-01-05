@@ -6,6 +6,7 @@ import 'package:medicare/screens/doctor_appointement.dart';
 import 'package:medicare/screens/doctor_detail.dart';
 import 'package:medicare/screens/garde.dart';
 import 'package:medicare/screens/home.dart';
+import 'package:medicare/screens/map.dart';
 import 'package:medicare/screens/profil.dart';
 
 Map<String, Widget Function(BuildContext)> routes = {
@@ -16,5 +17,6 @@ Map<String, Widget Function(BuildContext)> routes = {
   '/welcome': (context) => WelcomeScreen(),
   '/appointment': (context) => DoctorAppointement(),
   '/profil': (context) => Profil(),
-  '/settings': (context) => SettingsPage()
+  '/settings': (context) => SettingsPage(),
+  '/map': (context) => MapSample()
 };

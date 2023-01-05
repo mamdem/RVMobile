@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medicare/styles/colors.dart';
 
 import '../../../constants.dart';
 import '../../Login/login_screen.dart';
@@ -29,6 +30,8 @@ class LoginAndSignupBtn extends StatelessWidget {
             child: Text(
               "Connexion".toUpperCase(),
             ),
+            style: ElevatedButton.styleFrom(
+                primary: Color(MyColors.primary), elevation: 0),
           ),
         ),
         const SizedBox(height: 16),
